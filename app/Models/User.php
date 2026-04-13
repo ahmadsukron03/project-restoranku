@@ -2,25 +2,55 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes; // Tambahkan ini
+use Illuminate\Database\Eloquent\Relations\BelongsTo; // Tambahkan ini
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Atribut yang dapat diisi secara massal (Mass Assignment).
+     * Disesuaikan dengan kolom di migration Anda.
+     */
+    protected $fillable = [
+        'username',
+        'password',
+        'fullname',
+        'email',
+        'phone',
+        'role_id',
+        'created_at',
+        'updated_at'
+    ];
+
+    protected $dates = ['deleted_at'];
+    /**
+     * Atribut yang harus disembunyikan saat serialisasi (JSON).
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * Relasi ke Model Role (Setiap user punya satu role).
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Casting atribut.
      */
     protected function casts(): array
     {
