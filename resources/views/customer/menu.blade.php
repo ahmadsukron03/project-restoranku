@@ -61,7 +61,6 @@
     </div>
     <!-- Fruits Shop End-->
 @endsection
-
 @section('script')
     <script>
         function addToCart(menuId) {
@@ -75,12 +74,19 @@
                         id: menuId
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     alert(data.message);
-                }).catch((error) => {
-                    console.log('Error': error)
                 })
+                .catch((error) => {
+                    // Perbaikan typo: gunakan koma, bukan titik dua di console.log
+                    console.error('Error:', error);
+                });
         }
     </script>
 @endsection
