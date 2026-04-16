@@ -1,5 +1,11 @@
 @extends('customer.layouts.master')
 @section('content')
+    <div class="container-fluid page-header py-5">
+        <h1 class="text-center text-white display-6">Keranjang</h1>
+        <ol class="breadcrumb justify-content-center mb-0">
+            <li class="breadcrumb-item active text-primary">Silakan cek esanan anda</li>
+        </ol>
+    </div>
     <div class="container-fluid py-5">
         <div class="container py-5">
             @if (session('success'))
@@ -119,7 +125,7 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end">
-                            <a href=""
+                            <a href="{{ route('checkout') }}"
                                 class="btn border-secondary py-3 px-4 text-primary text-uppercase mb-4 rounded-pill">
                                 Lanjut ke Pembayaran
                             </a>

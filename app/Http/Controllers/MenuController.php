@@ -3,16 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 
 class MenuController extends Controller
 {
     public function index(Request $request)
     {
         $tableNumber = $request->query('meja');
+
         if ($tableNumber) {
-            Session::put('tableNumbser', $tableNumber);
+            Session::put('tableNumber', $tableNumber);
         }
 
         $items = Item::where('is_active', 1)->orderBy('name', 'asc')->get();
@@ -108,5 +113,115 @@ class MenuController extends Controller
         // kita lupakan si keranjangnya
         $request->session()->forget('cart');
         return redirect()->route('cart')->with('success', 'Keranjang Berhasil Dikosongkan');
+    }
+
+    // Checkout 
+
+    public function checkout()
+    {
+        $cart = Session::get('cart');
+
+        if (empty($cart)) {
+            return redirect()->route('cart')->with('error', 'Keranjang Masih Kosong');
+        }
+
+        $tableNumber = Session::get('tableNumber');
+
+        return view('customer.checkout', compact('cart', 'tableNumber'));
+
+    }
+
+    public function storeOrder(Request $request)
+    {
+        $cart = Session::get('cart');
+        $tableNumber = Session::get('tableNumber');
+
+        if (empty($cart)) {
+            return redirect()->route('cart')->with('error', 'Keranjang Masih Kosong');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'fullname' => 'required|string|max:255',
+            'phone' => 'required|string|max:15',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('checkout')->withErrors($validator);
+        }
+
+        // 1. Hitung total keseluruhan dari keranjang
+        $total = 0;
+        foreach ($cart as $item) {
+            $total += $item['price'] * $item['qty'];
+        }
+
+        $totalAmount = 0;
+
+        foreach ($cart as $item) {
+            // Menghitung total harga keseluruhan
+            $totalAmount += $item['qty'] * $item['price'];
+
+            // Menyusun detail item (biasanya untuk Payment Gateway seperti Midtrans)
+            $itemDetails[] = [
+                'id' => $item['id'],
+                // Harga satuan ditambah pajak 10% (sesuai logika di gambar)
+                'price' => (int) ($item['price'] + ($item['price'] * 0.1)),
+                'quantity' => $item['qty'],
+                'name' => substr($item['name'], 0, 50), // Batasi nama maksimal 50 karakter
+            ];
+        }
+
+        $user = User::firstOrCreate([
+            'fullname' => $request->input('fullname'),
+            'phone' => $request->input('phone'),
+            'role_id' => 4
+        ]);
+
+        $order = Order::create([
+            'order_code' => 'ORD-' . $tableNumber . time(),
+            'user_id' => $user->id,
+            'subtotal' => $totalAmount,
+            'tax' => 0.1 * $totalAmount,
+            'grandtotal' => $totalAmount + (0.1 * $totalAmount),
+            'status' => 'pending',
+            'table_number' => $tableNumber,
+            'payment_method' => $request->payment_method,
+            'notes' => $request->notes,
+        ]);
+
+        foreach ($cart as $item) {
+            OrderItem::create([
+                'order_id' => $order->id,        // ID dari hasil Order::create sebelumnya
+                'item_id' => $item['id'],       // ID produk/menu
+                'quantity' => $item['qty'],      // Jumlah yang dipesan
+                'price' => $item['price'] * $item['qty'], // Total harga sebelum pajak
+                'tax' => 0.1 * $item['price'] * $item['qty'], // Pajak 10% dari total item
+                'total_price' => ($item['price'] * $item['qty']) + (0.1 * $item['price'] * $item['qty']), // Harga akhir (Item + Pajak)
+            ]);
+        }
+
+        // 4. Hapus data session setelah pesanan berhasil disimpan
+        Session::forget('cart');
+
+        // 5. Alihkan pengguna kembali ke menu dengan pesan sukses
+        return redirect()->route('checkout.success', ['orderId' => $order->order_code])->with('success', 'Pesanan berhasil dibuat');
+    }
+
+    public function checkoutSuccess($orderId)
+    {
+        $order = Order::where('order_code', $orderId)->first();
+
+        if (!$order) {
+            return redirect()->route('menu')->with('error', 'Pesanan tidak ditemukan');
+        }
+
+        $orderItems = OrderItem::where('order_id', $order->id)->get();
+
+        if ($order->payment_method == 'qris') {
+            $order->status = 'settlement';
+            $order->save();
+        }
+
+        return view('customer.success', compact('order', 'orderItems'));
     }
 }
