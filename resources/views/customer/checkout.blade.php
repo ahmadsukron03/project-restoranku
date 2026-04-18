@@ -125,7 +125,7 @@
                                 <label class="form-check-label" for="cash">Tunai (Di Kasir)</label>
                             </div>
 
-                            <button type="submit"
+                            <button id="pay-button" type="button"
                                 class="btn border-secondary py-3 px-4 text-uppercase text-primary w-100 rounded-pill">
                                 Konfirmasi Pesanan
                             </button>
@@ -135,4 +135,62 @@
             </form>
         </div>
     </div>
+
+    <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const payButton = document.getElementById('pay-button');
+            const form = document.querySelector('form');
+
+            payButton.addEventListener('click', function() {
+                let paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+
+                if (!paymentMethod) {
+                    alert('Pilih metode pembayaran terlebih dahulu!');
+                    return;
+                }
+
+                paymentMethod = paymentMethod.value;
+                let formData = new FormData(form);
+
+                if (paymentMethod == 'tunai') {
+                    form.submit();
+                } else {
+                    fetch("{{ route('checkout.store') }}", {
+                            method: "POST",
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.snap_token) {
+                                snap.pay(data.snap_token, {
+                                    onSuccess: function(result) {
+                                        window.location.href = "/checkout/success/" + data
+                                            .order_code;
+                                    },
+                                    onPending: function(result) {
+                                        alert("Menunggu Pembayaran");
+                                    },
+                                    onError: function(result) {
+                                        alert("Pembayaran Gagal");
+                                    }
+                                });
+                            } else {
+                                alert("Gagal mendapatkan token pembayaran");
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            alert("Terjadi kesalahan");
+                        });
+                }
+            });
+        });
+    </script>
 @endsection

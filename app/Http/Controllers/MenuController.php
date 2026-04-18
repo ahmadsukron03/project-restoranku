@@ -146,7 +146,15 @@ class MenuController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->route('checkout')->withErrors($validator);
+            // Jika permintaan adalah AJAX/Fetch, kirim JSON
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
+            // Jika request biasa (tunai), tetap redirect
+            return redirect()->route('checkout')->withErrors($validator)->withInput();
         }
 
         // 1. Hitung total keseluruhan dari keranjang
@@ -160,6 +168,7 @@ class MenuController extends Controller
         foreach ($cart as $item) {
             // Menghitung total harga keseluruhan
             $totalAmount += $item['qty'] * $item['price'];
+            $itemDetails = [];
 
             // Menyusun detail item (biasanya untuk Payment Gateway seperti Midtrans)
             $itemDetails[] = [
@@ -186,7 +195,7 @@ class MenuController extends Controller
             'status' => 'pending',
             'table_number' => $tableNumber,
             'payment_method' => $request->payment_method,
-            'notes' => $request->notes,
+            'note' => $request->note,
         ]);
 
         foreach ($cart as $item) {
@@ -203,8 +212,50 @@ class MenuController extends Controller
         // 4. Hapus data session setelah pesanan berhasil disimpan
         Session::forget('cart');
 
-        // 5. Alihkan pengguna kembali ke menu dengan pesan sukses
-        return redirect()->route('checkout.success', ['orderId' => $order->order_code])->with('success', 'Pesanan berhasil dibuat');
+        if ($request->payment_method == 'tunai') {
+            return response()->json([
+                'status' => 'success',
+                'payment_method' => 'tunai',
+                'order_code' => $order->order_code,
+                'redirect_url' => route('checkout.success', ['orderId' => $order->order_code])
+            ]);
+        } else {
+            \Midtrans\Config::$serverKey = config('midtrans.server_key');
+            \Midtrans\Config::$clientKey = config('midtrans.client_key');
+            \Midtrans\Config::$isProduction = config('midtrans.is_production');
+            \Midtrans\Config::$isSanitized = true;
+            \Midtrans\Config::$is3ds = true;
+
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $order->order_code,
+                    'gross_amount' => (int) $order->grandtotal,
+                ],
+                'item_details' => $itemDetails,
+                'customer_details' => [
+                    'first_name' => $user->fullname ?? 'Guest',
+                    'phone' => $user->phone,
+                ],
+            ];
+
+            try {
+                // Meminta Snap Token dari server Midtrans
+                $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+                return response()->json([
+                    'status' => 'success',
+                    'snap_token' => $snapToken,
+                    'order_code' => $order->order_code,
+                ]);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Gagal membuat pesanan. Silakan coba lagi.'
+                ]);
+            }
+
+        }
+
     }
 
     public function checkoutSuccess($orderId)
