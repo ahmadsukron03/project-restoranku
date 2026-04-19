@@ -19,6 +19,17 @@
                 </div>
             </div>
         </div>
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <h5 class="alert-heading">Update Error!</h5>
+                @foreach ($errors->all() as $error)
+                    <li class="list-group-item">
+                        <i class="bi bi-flie-excel"></i>{{ $error }}
+                    </li>
+                @endforeach
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
+            </div>
+        @endif
         <div class="card mt-3">
             <div class="card-body">
                 {{-- enctype="multipart/form-data" sangat penting untuk upload gambar --}}
@@ -31,10 +42,10 @@
                                     <label for="name">Nama Menu <span class="text-danger">*</span></label>
                                     <input name="name" type="text"
                                         class="form-control @error('name') is-invalid @enderror" id="name"
-                                        placeholder="Masukkan Nama Menu" value="{{ old('name') }}" required>
-                                    @error('name')
+                                        placeholder="Masukkan Nama Menu" value="{{ old('name') }}">
+                                    {{-- @error('name')
                                         <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    @enderror --}}
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -42,10 +53,10 @@
                                     <label for="price">Harga (Rp) <span class="text-danger">*</span></label>
                                     <input name="price" type="number"
                                         class="form-control @error('price') is-invalid @enderror" id="price"
-                                        placeholder="Contoh: 25000" value="{{ old('price') }}" required>
-                                    @error('price')
+                                        placeholder="Contoh: 25000" value="{{ old('price') }}">
+                                    {{-- @error('price')
                                         <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    @enderror --}}
                                 </div>
                             </div>
 
@@ -53,7 +64,7 @@
                                 <div class="form-group">
                                     <label for="category_id">Kategori Menu <span class="text-danger">*</span></label>
                                     <select name="category_id" id="category_id"
-                                        class="form-select @error('category_id') is-invalid @enderror" required>
+                                        class="form-select @error('category_id') is-invalid @enderror">
                                         <option value="" disabled selected>-- Pilih Kategori --</option>
                                         {{-- Looping data kategori dari Controller --}}
                                         @foreach ($categories as $category)
@@ -63,9 +74,9 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('category_id')
+                                    {{-- @error('category_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    @enderror --}}
                                 </div>
                             </div>
 
@@ -95,9 +106,9 @@
                                     <input name="img" type="file"
                                         class="form-control @error('img') is-invalid @enderror" id="img"
                                         accept="image/*">
-                                    @error('img')
+                                    {{-- @error('img')
                                         <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    @enderror --}}
                                 </div>
                             </div>
 
@@ -105,10 +116,10 @@
                                 <div class="form-group">
                                     <label for="description">Deskripsi Menu <span class="text-danger">*</span></label>
                                     <textarea class="form-control @error('description') is-invalid @enderror" name="description" id="description"
-                                        rows="3" placeholder="Jelaskan detail menu ini..." required>{{ old('description') }}</textarea>
-                                    @error('description')
+                                        rows="3" placeholder="Jelaskan detail menu ini...">{{ old('description') }}</textarea>
+                                    {{-- @error('description')
                                         <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    @enderror --}}
                                 </div>
                             </div>
                         </div>

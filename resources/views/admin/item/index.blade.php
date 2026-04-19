@@ -5,6 +5,15 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/compiled/css/table-datatable.css') }}">
 @endsection
 @section('content')
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <p>
+                <i class="bi bi-check-circle-fill"></i>
+                {{ session('success') }}
+            </p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
+        </div>
+    @endif
     <div class="page-heading">
         <div class="page-title">
             <div class="row">
@@ -13,7 +22,8 @@
                     <p class="text-subtitle text-muted">Berbagai pilihan menu terbaik.</p>
                 </div>
                 <div class="col-12 col-md-6 order-md-2 order-first">
-                    <a href="{{ route('items.create') }}" class="btn btn-primary float-start float-lg-end">Tambah Menu</a>
+                    <a href="{{ route('items.create') }}" class="btn btn-primary float-start float-lg-end">Tambah
+                        Menu</a>
                 </div>
             </div>
         </div>
@@ -53,13 +63,13 @@
                                             {{ $item->category->cat_name ?? 'Tanpa Kategori' }}
                                         </span>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <span class="badge {{ $item->is_active == 1 ? 'bg-success' : 'bg-danger' }}">
                                             {{ $item->is_active == 1 ? 'Aktif' : 'Tidak Aktif' }}
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="d-flex jutify-content-center align-items-center">
+                                        <div class="d-flex justify-content-center align-items-center">
                                             <a href="{{ route('items.edit', $item->id) }}" class="btn btn-sm btn-warning">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
