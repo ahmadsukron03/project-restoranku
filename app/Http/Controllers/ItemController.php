@@ -81,7 +81,6 @@ class ItemController extends Controller
         $categories = Category::all();
 
         return view('admin.item.edit', compact('categories', 'item'));
-
     }
 
     /**
