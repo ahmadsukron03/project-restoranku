@@ -59,7 +59,7 @@ class ItemController extends Controller
             $validatedData['img'] = $imageName;
         }
 
-        $item = Item::create($validatedData);
+        Item::create($validatedData);
 
         return redirect()->route('items.index')->with('success', 'Item Created Successfully');
     }

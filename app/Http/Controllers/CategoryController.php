@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -11,7 +12,8 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        return view('admin.category.index');
+        $categories = Category::orderBy('created_at', 'desc')->get();
+        return view('admin.category.index', compact('categories'));
     }
 
     /**
@@ -19,7 +21,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.category.create');
     }
 
     /**
@@ -27,7 +29,13 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'cat_name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+        ]);
+
+        Category::create($request->all());
+        return redirect()->route('categories.index')->with('success', 'Category Created successfully.');
     }
 
     /**
@@ -43,7 +51,9 @@ class CategoryController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+
+        return view('admin.category.edit', compact('category'));
     }
 
     /**
@@ -51,7 +61,16 @@ class CategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+
+        $request->validate([
+            'cat_name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+        ]);
+
+        $category->update($request->all());
+
+        return redirect()->route('categories.index')->with('success', 'category Updated successfully.');
     }
 
     /**
@@ -59,6 +78,9 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $category = Category::findOrFail($id);
+        $category->delete();
+
+        return redirect()->route('categories.index')->with('success', 'Category Deleted successfully.');
     }
 }

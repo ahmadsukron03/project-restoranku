@@ -1,0 +1,79 @@
+@extends('admin.layouts.master')
+@section('title', 'Tambah Kategori')
+
+@section('css')
+@endsection
+
+@section('content')
+    <section class="section">
+        <div class="page-title">
+            <div class="row">
+                <div class="col-12 col-md-6 order-md-1 order-last">
+                    <h3>Tambah Data Kategori</h3>
+                    <p class="text-subtitle text-muted">Silahkan masukkan Kategori terbaru.</p>
+                </div>
+                <div class="col-12 col-md-6 order-md-2 order-first">
+                    <a href="{{ route('categories.index') }}" class="btn btn-secondary float-start float-lg-end">
+                        <i class="bi bi-arrow-left"></i> Kembali
+                    </a>
+                </div>
+            </div>
+        </div>
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <h5 class="alert-heading">Submit Error!</h5>
+                @foreach ($errors->all() as $error)
+                    <li class="list-group-item">
+                        <i class="bi bi-flie-excel"></i>{{ $error }}
+                    </li>
+                @endforeach
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="close"></button>
+            </div>
+        @endif
+        <div class="card mt-3">
+            <div class="card-body">
+                {{-- enctype="multipart/form-data" sangat penting untuk upload gambar --}}
+                <form action="{{ route('categories.store') }}" method="POST">
+                    @csrf
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="cat_name">Nama Kategori <span class="text-danger">*</span></label>
+                                    <input name="cat_name" type="text"
+                                        class="form-control @error('cat_name') is-invalid @enderror" id="cat_name"
+                                        placeholder="Masukkan Nama Kategori" value="{{ old('cat_name') }}">
+                                    {{-- @error('name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror --}}
+                                </div>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="description">Deskripsi Kategori <span class="text-danger">*</span></label>
+                                    <input name="description" type="text"
+                                        class="form-control @error('description') is-invalid @enderror" id="description"
+                                        placeholder="Masukkan Deskripsi" value="{{ old('description') }}">
+                                    {{-- @error('description')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror --}}
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Tombol Aksi --}}
+                        <div class="row mt-4">
+                            <div class="col-12 text-end">
+                                <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
+                                <button type="submit" class="btn btn-primary me-1 mb-1">
+                                    <i class="bi bi-save"></i> Simpan Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+@endsection
