@@ -43,10 +43,10 @@
                                 <tr>
                                     <th scope="row">
                                         <div class="d-flex align-items-center">
-                                            {{-- Gunakan image dari item jika ada --}}
-                                            <img src="{{ $item['img'] ?? 'https://images.unsplash.com/photo-1591325418441-ff678baf78ef' }}"
-                                                class="img-fluid rounded-circle"
-                                                style="width: 80px; height: 80px; object-fit: cover;" alt="">
+                                            <img src="{{ asset('img_item_upload/' . $item['image']) }}"
+                                                class="img-fluid rounded"
+                                                style="width: 80px; height: 80px; object-fit: cover;" alt=""
+                                                onerror="this.onerror=null;this.src='{{ $item['image'] }}'">
                                         </div>
                                     </th>
                                     <td>
@@ -200,4 +200,8 @@
             }
         }
     </script>
+@endsection
+@section('scripts')
+    <script src="{{ asset('assets/admin/extensions/simple-datatables/umd/simple-datatables.js') }}"></script>
+    <script src="{{ asset('assets/admin/static/js/pages/simple-datatables.js') }}"></script>
 @endsection

@@ -164,6 +164,7 @@ class MenuController extends Controller
         }
 
         $totalAmount = 0;
+        $itemDetails = [];
 
         foreach ($cart as $item) {
             // Menghitung total harga keseluruhan

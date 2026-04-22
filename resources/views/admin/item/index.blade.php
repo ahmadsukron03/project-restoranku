@@ -42,7 +42,7 @@
                                 <th>Kategori</th>
                                 <th class="text-center" width="10%">Status</th>
                                 {{-- Matikan panah sorting di kolom Aksi --}}
-                                <th class="text-center" data-sortable="false" width="15%">Aksi</th>
+                                <th class="text-center" data-sortable="false" width="25%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -69,11 +69,34 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="d-flex justify-content-center align-items-center">
+                                        <div class="d-flex justify-content-center align-items-center gap-2">
                                             <a href="{{ route('items.edit', $item->id) }}" class="btn btn-sm btn-warning">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <form action="{{ route('items.destroy', $item->id) }}" method="POST"
+                                            @if ($item->is_active == 1)
+                                                <form action="{{ route('items.updateStatus', $item->id) }}" method="POST"
+                                                    class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="is_active" value="0">
+
+                                                    <button type="submit" class="btn btn-danger btn-sm"
+                                                        onclick="return confirm('Apakah anda yakin ingin menonaktifkan item ini?')">
+                                                        <i class="bi bi-x"></i> Nonaktifkan
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <form action="{{ route('items.updateStatus', $item->id) }}" method="POST"
+                                                    class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="is_active" value="1">
+
+                                                    <button type="submit" class="btn btn-success btn-sm"
+                                                        onclick="return confirm('Aktifkan kembali item ini?')">
+                                                        <i class="bi bi-check"></i> Aktifkan
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            {{-- <form action="{{ route('items.destroy', $item->id) }}" method="POST"
                                                 class="d-inline ms-2">
                                                 @csrf
                                                 @method('DELETE')
@@ -81,7 +104,7 @@
                                                     onclick="return confirm('Yakin hapus?')">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
-                                            </form>
+                                            </form> --}}
                                         </div>
                                     </td>
                                 </tr>
